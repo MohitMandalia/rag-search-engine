@@ -1,7 +1,7 @@
 from lib.search_utils import load_movies, load_stopwords, CACHE_PATH
 import string
 from nltk.stem import PorterStemmer
-from collections import defaultdict
+from collections import defaultdict, Counter
 import os
 import pickle
 
@@ -11,16 +11,27 @@ class InvertedIndex:
     def __init__(self):
         self.index = defaultdict(set) # token: [doc_id1, doc_id2]
         self.docmap = {} # map document ID: document
+        self.term_frequencies = defaultdict(Counter)
+
         self.index_path = CACHE_PATH/'index.pkl'
         self.docmap_path = CACHE_PATH/'docmap.pkl'
+        self.term_frequencies_path = CACHE_PATH/'term_frequencies.pkl'
 
     def __add_document(self, doc_id, text):
         tokens = tokenize_text(text)
         for token in set(tokens):
             self.index[token].add(doc_id)
+        self.term_frequencies[doc_id].update(tokens)
 
     def get_document(self, term):
         return sorted(list(self.index[term]))
+    
+    def get_tf(self, doc_id, term):
+        token = tokenize_text(term)
+        if len(token) != 1:
+            raise ValueError("Can only process 1 token")
+        return self.term_frequencies[doc_id][token[0]]
+
 
     def build(self):
         movies = load_movies()
@@ -38,12 +49,17 @@ class InvertedIndex:
 
         with open(self.docmap_path, 'wb') as file:
             pickle.dump(self.docmap, file)
+        
+        with open(self.term_frequencies_path, 'wb') as file:
+            pickle.dump(self.term_frequencies, file)
 
     def load(self):
         with open(self.index_path, "rb") as file:
             self.index = pickle.load(file)
         with open(self.docmap_path, "rb") as file:
             self.docmap = pickle.load(file)
+        with open(self.term_frequencies_path, 'rb') as file:
+            self.term_frequencies = pickle.load(file)
 
 
 def sanitize_text(text):
@@ -95,3 +111,8 @@ def build_command():
     idx = InvertedIndex()
     idx.build()
     idx.save()
+
+def tf_command(doc_id, term):
+    idx = InvertedIndex()
+    idx.load()
+    print(idx.get_tf(doc_id, term))
