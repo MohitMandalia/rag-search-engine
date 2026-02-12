@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.keyword_search import search_command, build_command, tf_command, idf_command
+from lib.keyword_search import (
+    search_command,
+    build_command,
+    tf_command,
+    idf_command,
+    tf_idf_command
+)
 
 
 def main() -> None:
@@ -20,6 +26,10 @@ def main() -> None:
     search_parser = subparsers.add_parser("idf", help="Calculate Inverse Document Frequency")
     search_parser.add_argument("term", type=str, help="Search term for idf")
 
+    search_parser = subparsers.add_parser("tfidf", help="Calculate TF x IDF")
+    search_parser.add_argument("doc_id", type=int, help="Document ID to check")
+    search_parser.add_argument("term", type=str, help="Search term to find counts")
+
     args = parser.parse_args()
 
     match args.command:
@@ -34,6 +44,8 @@ def main() -> None:
             tf_command(args.doc_id, args.term)
         case "idf":
             idf_command(args.term)
+        case "tfidf":
+            tf_idf_command(args.doc_id, args.term)
         case _:
             parser.print_help()
 
