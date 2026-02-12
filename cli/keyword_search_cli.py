@@ -6,7 +6,8 @@ from lib.keyword_search import (
     build_command,
     tf_command,
     idf_command,
-    tf_idf_command
+    tf_idf_command,
+    bm25_idf_command
 )
 
 
@@ -17,18 +18,21 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
-    search_parser = subparsers.add_parser("build", help="Build cache")
+    build_parser = subparsers.add_parser("build", help="Build cache")
 
-    search_parser = subparsers.add_parser("tf", help="Calculate term frequency")
-    search_parser.add_argument("doc_id", type=int, help="Document ID to check")
-    search_parser.add_argument("term", type=str, help="Search term to find counts")
+    tf_parser = subparsers.add_parser("tf", help="Calculate term frequency")
+    tf_parser.add_argument("doc_id", type=int, help="Document ID to check")
+    tf_parser.add_argument("term", type=str, help="Search term to find counts")
 
-    search_parser = subparsers.add_parser("idf", help="Calculate Inverse Document Frequency")
-    search_parser.add_argument("term", type=str, help="Search term for idf")
+    idf_parser = subparsers.add_parser("idf", help="Calculate Inverse Document Frequency")
+    idf_parser.add_argument("term", type=str, help="Search term for idf")
 
-    search_parser = subparsers.add_parser("tfidf", help="Calculate TF x IDF")
-    search_parser.add_argument("doc_id", type=int, help="Document ID to check")
-    search_parser.add_argument("term", type=str, help="Search term to find counts")
+    tf_idf_parser = subparsers.add_parser("tfidf", help="Calculate TF x IDF")
+    tf_idf_parser.add_argument("doc_id", type=int, help="Document ID to check")
+    tf_idf_parser.add_argument("term", type=str, help="Search term to find counts")
+
+    bm25_idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF score for a given term")
+    bm25_idf_parser.add_argument("term", type=str, help="Term to get BM25 IDF score for")
 
     args = parser.parse_args()
 
@@ -46,6 +50,8 @@ def main() -> None:
             idf_command(args.term)
         case "tfidf":
             tf_idf_command(args.doc_id, args.term)
+        case "bm25idf":
+            bm25_idf_command(args.term)
         case _:
             parser.print_help()
 
